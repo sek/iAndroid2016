@@ -67,6 +67,8 @@ public class Dashboard extends Activity implements TextToSpeech.OnInitListener
 
         mText = (LogTextView) findViewById(R.id.text);
         
+        ioio_thread_ = new IOIOThread();
+        ioio_thread_.start();
     }
 
     @Override
@@ -98,17 +100,6 @@ public class Dashboard extends Activity implements TextToSpeech.OnInitListener
     }
 
     /**
-     * Called when the application is resumed (also when first started). Here is
-     * where we'll create our IOIO thread.
-     */
-    @Override
-    protected void onResume() {
-        super.onResume();
-        ioio_thread_ = new IOIOThread();
-        ioio_thread_.start();
-    }
-
-    /**
      * Called when the application is paused. We want to disconnect with the
      * IOIO at this point, as the user is no longer interacting with our
      * application. We also disconnect from the Trabant.
@@ -116,6 +107,14 @@ public class Dashboard extends Activity implements TextToSpeech.OnInitListener
     @Override
     protected void onPause() {
         super.onPause();
+        // IF we disconnect here, then when the screen times out, our robot will become unresponsive
+        // Let's disconnect in onDestroy instead
+    }
+    
+    @Override
+    protected void onDestroy()
+    {
+        super.onDestroy();
         ioio_thread_.abort();
         try {
             ioio_thread_.join();
@@ -227,8 +226,8 @@ public class Dashboard extends Activity implements TextToSpeech.OnInitListener
      * @param msg the message to write
      */
     public void log(final String msg) {
+        Log.d(TAG, msg);
         runOnUiThread(new Runnable() {
-
             public void run() {
                 mText.append(msg);
                 mText.append("\n");
