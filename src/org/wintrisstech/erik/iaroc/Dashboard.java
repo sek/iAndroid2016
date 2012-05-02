@@ -1,12 +1,15 @@
 package org.wintrisstech.erik.iaroc;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.os.Bundle;
+import android.speech.tts.TextToSpeech;
 import android.util.Log;
 import ioio.lib.api.IOIO;
 import ioio.lib.api.IOIOFactory;
 import ioio.lib.api.exception.ConnectionLostException;
+import java.util.Locale;
 import org.wintrisstech.irobot.ioio.IRobotCreateInterface;
 import org.wintrisstech.irobot.ioio.SimpleIRobotCreate;
 
@@ -20,8 +23,8 @@ import org.wintrisstech.irobot.ioio.SimpleIRobotCreate;
  * <p> There should be no need to modify this class. Modify Trabant instead.
  *
  */
-public class Dashboard extends Activity {
-
+public class Dashboard extends Activity implements TextToSpeech.OnInitListener
+{
     /**
      * Tag used for debugging.
      */
@@ -38,6 +41,8 @@ public class Dashboard extends Activity {
      * A Trabant instance
      */
     private Trabant trabi601;
+    protected static final int MY_DATA_CHECK_CODE = 33;
+    private TextToSpeech mTts;
 
     /**
      * Called when the activity is first created. Here we normally initialize
@@ -56,7 +61,40 @@ public class Dashboard extends Activity {
         this.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         setContentView(R.layout.main);
 
+        Intent checkIntent = new Intent();
+        checkIntent.setAction(TextToSpeech.Engine.ACTION_CHECK_TTS_DATA);
+        startActivityForResult(checkIntent, MY_DATA_CHECK_CODE);
+
         mText = (LogTextView) findViewById(R.id.text);
+        
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data)
+    {
+        if (requestCode == MY_DATA_CHECK_CODE)
+        {
+            if (resultCode == TextToSpeech.Engine.CHECK_VOICE_DATA_PASS)
+            {
+                // success, create the TTS instance
+                mTts = new TextToSpeech(this, this);
+            } else
+            {
+                // missing data, install it
+                Intent installIntent = new Intent();
+                installIntent.setAction(TextToSpeech.Engine.ACTION_INSTALL_TTS_DATA);
+                startActivity(installIntent);
+            }
+        }
+    }
+
+    public void speak(String stuffToSay)
+    {
+        mTts.setLanguage(Locale.US);
+        if (!mTts.isSpeaking())
+        {
+            mTts.speak(stuffToSay, TextToSpeech.QUEUE_FLUSH, null);
+        }
     }
 
     /**
@@ -83,6 +121,10 @@ public class Dashboard extends Activity {
             ioio_thread_.join();
         } catch (InterruptedException e) {
         }
+    }
+
+    public void onInit(int arg0)
+    {
     }
 
     /**

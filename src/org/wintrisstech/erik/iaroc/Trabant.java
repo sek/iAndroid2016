@@ -139,6 +139,7 @@ public class Trabant extends IRobotCreateAdapter
 
     private void backingUp(String direction) throws Exception
     {
+        dashboard.speak("backing up");
         if (direction.equals("right"))
         {
             driveDirect(-(speed), -(speed/4));
