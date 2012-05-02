@@ -2,7 +2,6 @@ package org.wintrisstech.erik.iaroc;
 
 import ioio.lib.api.IOIO;
 import ioio.lib.api.exception.ConnectionLostException;
-import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.wintrisstech.irobot.ioio.IRobotCreateAdapter;
@@ -40,9 +39,7 @@ public class Trabant extends IRobotCreateAdapter
     private int statePointer = 0;
     private int presentState = 0;
     private int howFarBacked = 200;
-    private int howFarToGoBackWhenBumped = 200;
-    private boolean nextTurnDirection = true;
-    private Random r;
+    private final int howFarToGoBackWhenBumped = 200;
 
     /**
      * Constructs a Trabant, an amazing machine!
@@ -152,21 +149,13 @@ public class Trabant extends IRobotCreateAdapter
         }
         if (direction.equals("straight"))
         {
-            if (nextTurnDirection)
-            {
-                driveDirect(-(speed/4), -(speed));
-            } else
-            {
-                driveDirect(-(speed), -(speed/4));
-            }
+                driveDirect(-(speed), -(speed));
         }
         howFarBacked += getDistance();
-        dashboard.log(howFarBacked + "/" + getDistance());
         if (howFarBacked < 0)
         {
-            nextTurnDirection = r.nextBoolean();
-            howFarBacked = howFarToGoBackWhenBumped;
             driveDirect(speed, speed);
+            howFarBacked = howFarToGoBackWhenBumped;
             statePointer = 0;
             presentState = 0;
         }
